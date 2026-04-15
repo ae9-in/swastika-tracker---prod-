@@ -7,11 +7,11 @@ import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
 
-const corsOrigin = env.corsOrigin.includes(',')
-  ? env.corsOrigin.split(',').map(s => s.trim())
-  : env.corsOrigin;
+const corsOptions = env.corsOrigin === '*'
+  ? { origin: true }
+  : { origin: env.corsOrigin.includes(',') ? env.corsOrigin.split(',').map(s => s.trim()) : env.corsOrigin };
 
-app.use(cors({ origin: corsOrigin }));
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '2mb' }));
 app.use(morgan('dev'));
 

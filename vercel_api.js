@@ -1,15 +1,9 @@
 import express from 'express';
+import app from './backend/src/app.js';
+import { pool } from './backend/src/config/db.js';
 import path from 'path';
-import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const distPath = process.env.VERCEL 
-  ? path.join(process.cwd(), 'dist') 
-  : path.join(__dirname, 'dist');
-
-const app = express();
+const distPath = path.join(process.cwd(), 'dist');
 
 app.use(express.static(distPath));
 
