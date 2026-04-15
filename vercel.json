@@ -2,16 +2,16 @@
   "version": 2,
   "builds": [
     {
-      "src": "backend/src/server.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "frontend",
+      "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
-        "buildCommand": "cd frontend && npm run build",
+        "buildCommand": "npm run build",
         "outputDirectory": "dist"
       }
+    },
+    {
+      "src": "backend/src/server.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
