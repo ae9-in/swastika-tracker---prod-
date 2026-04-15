@@ -3,10 +3,6 @@
     {
       "src": "vercel_api.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "dist/**",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -16,7 +12,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "dist/index.html"
+      "dest": "vercel_api.js"
     }
   ]
 }

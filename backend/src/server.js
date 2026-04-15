@@ -8,17 +8,18 @@ import fs from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const distPath = join(__dirname, '../../dist');
+const distPath = process.env.VERCEL 
+  ? join(__dirname, '../frontend/dist') 
+  : join(__dirname, '../../dist');
 
-function serveFrontend(req, res, next) {
+app.use((req, res, next) => {
   const indexPath = join(distPath, 'index.html');
   if (fs.existsSync(indexPath)) {
-    return res.sendFile(indexPath);
+    res.sendFile(indexPath);
+  } else {
+    next();
   }
-  next();
-}
-
-app.use(serveFrontend);
+});
 
 const server = app.listen(env.port, () => {
   console.log(`Server running on port ${env.port}`);
