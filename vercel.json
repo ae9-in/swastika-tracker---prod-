@@ -11,7 +11,7 @@
       "dest": "vercel_api.js"
     },
     {
-      "src": "/.*",
+      "src": "/(.*)",
       "dest": "vercel_api.js"
     }
   ]
