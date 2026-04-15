@@ -2,9 +2,11 @@ import app from './app.js';
 import { env } from './config/env.js';
 import { pool } from './config/db.js';
 
-const server = app.listen(env.port, () => {
+const port = process.env.PORT || env.port;
+
+const server = app.listen(port, () => {
   // eslint-disable-next-line no-console
-  console.log(`Backend listening on http://localhost:${env.port}`);
+  console.log(`Backend listening on http://localhost:${port}`);
 });
 
 function shutdown() {

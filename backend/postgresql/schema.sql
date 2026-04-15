@@ -105,8 +105,8 @@ create index if not exists idx_activities_business_created on activities (busine
 
 -- Optimized Performance Indexes (New)
 create index if not exists idx_affiliates_business_created on affiliates (business_id, created_at desc);
-create index if not exists idx_activities_affiliate_id on activities ((metadata->>'affiliateId'));
-create index if not exists idx_affiliates_created_date on affiliates (business_id, (created_at::date));
+create index if not exists idx_activities_affiliate_id on activities (business_id);
+create index if not exists idx_affiliates_created_date on affiliates (business_id, created_at);
 create index if not exists idx_uba_user_id on user_business_access (user_id);
 
 -- Employee follow-up assignment: add assigned_to column to reminders

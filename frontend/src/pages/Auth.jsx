@@ -71,12 +71,7 @@ export default function Auth() {
           </button>
         </form>
 
-        <div className="hint-box">
-          <p>Demo users</p>
-          <small>admin@swastika.in / Admin@123</small>
-          <small>hw@swastika.in / Admin@123</small>
-          <small>pooja@swastika.in / Admin@123</small>
-        </div>
+
 
         <div style={{ textAlign: 'center', marginTop: 16 }}>
           <small className="text-muted">
