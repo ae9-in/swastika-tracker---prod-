@@ -15,5 +15,5 @@ export const env = {
   databaseUrl: requireEnv('DATABASE_URL'),
   jwtSecret: requireEnv('JWT_SECRET'),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '8h',
-  corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  corsOrigin: process.env.CORS_ORIGIN || '*',
 };
