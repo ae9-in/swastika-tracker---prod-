@@ -35,11 +35,11 @@ export default function AppLayout() {
           <NavLink to="/app/dashboard" className={navLinkClass}>
             <ChartColumnBig size={18} /> Dashboard
           </NavLink>
-          <NavLink to="/app/affiliates" className={navLinkClass}>
+          <NavLink to="/app/affiliates" className={navLinkClass} end>
             <Users size={18} /> Affiliates
           </NavLink>
           <NavLink to="/app/affiliates/new" className={navLinkClass}>
-            <Plus size={18} /> New Affiliate
+            <Plus size={18} /> Add Affiliate
           </NavLink>
           <NavLink to="/app/reminders" className={navLinkClass}>
             <BellRing size={18} /> Reminders

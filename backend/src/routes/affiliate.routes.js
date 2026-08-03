@@ -19,9 +19,9 @@ const router = Router();
 router.use(authenticate, requireBusiness);
 
 router.get('/', validate(affiliateValidation.listSchema), getList);
-router.get('/export/csv', authorizeRole('admin'), exportCsv);
-router.post('/import/csv', authorizeRole('admin'), validate(affiliateValidation.importSchema), importCsv);
-router.post('/import/json', authorizeRole('admin'), validate(affiliateValidation.importJsonSchema), importJson);
+router.get('/export/csv', authorizeRole('admin', 'staff'), exportCsv);
+router.post('/import/csv', authorizeRole('admin', 'staff'), validate(affiliateValidation.importSchema), importCsv);
+router.post('/import/json', authorizeRole('admin', 'staff'), validate(affiliateValidation.importJsonSchema), importJson);
 router.get('/:id', validate(affiliateValidation.idParamSchema), getById);
 router.post('/', validate(affiliateValidation.createSchema), create);
 router.patch('/:id', validate(affiliateValidation.updateSchema), update);

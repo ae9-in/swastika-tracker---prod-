@@ -41,7 +41,7 @@ const createSchema = z.object({
     phone1: z.string().regex(phoneRegex),
     phone2: z.string().regex(phoneRegex),
     description: z.string().min(1),
-    status: z.enum(['Contacted', 'Samples Given', 'Follow Up Visit']).optional(),
+    status: z.enum(['Contacted', 'Samples Given', 'Follow Up Visit', 'Delivered']).optional(),
   }),
 });
 
@@ -56,7 +56,7 @@ const updateSchema = z.object({
       phone1: z.string().regex(phoneRegex).optional(),
       phone2: z.string().regex(phoneRegex).optional(),
       description: z.string().min(1).optional(),
-      status: z.enum(['Contacted', 'Samples Given', 'Follow Up Visit']).optional(),
+      status: z.enum(['Contacted', 'Samples Given', 'Follow Up Visit', 'Delivered']).optional(),
     })
     .refine((value) => Object.keys(value).length > 0, { message: 'At least one field is required' }),
 });
@@ -65,7 +65,7 @@ const statusSchema = z.object({
   query: z.any(),
   params: z.object({ id: z.string().uuid() }),
   body: z.object({
-    newStatus: z.enum(['Contacted', 'Samples Given', 'Follow Up Visit']),
+    newStatus: z.enum(['Contacted', 'Samples Given', 'Follow Up Visit', 'Delivered']),
     remark: z.string().max(500).optional(),
   }),
 });

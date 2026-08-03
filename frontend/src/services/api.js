@@ -1,6 +1,6 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 
-export const statusOrder = ['Contacted', 'Samples Given', 'Follow Up Visit'];
+export const statusOrder = ['Contacted', 'Samples Given', 'Follow Up Visit', 'Delivered'];
 
 async function request(path, { method = 'GET', token, body, expectText = false } = {}) {
   const headers = {};

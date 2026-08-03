@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useRef } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -69,7 +69,7 @@ export default function Dashboard() {
         <PageHeader
           title={`Staff Workspace: ${activeBusiness?.name || 'Business'}`}
           subtitle="Welcome to your operations center. Manage affiliates and reminders below."
-          actions={[{ label: 'New Affiliate', to: '/app/affiliates/new' }]}
+          actions={[{ label: 'Add Affiliate', to: '/app/affiliates/new' }]}
         />
         <section className="quick-grid">
           <Link to="/app/affiliates" className="quick-card">
@@ -102,7 +102,7 @@ export default function Dashboard() {
         subtitle="Clear operational insights for affiliates, reminders, and growth health."
         actions={[
           { label: 'Export Report', onClick: handleExport, variant: 'secondary' },
-          { label: 'New Affiliate', to: '/app/affiliates/new' },
+          { label: 'Add Affiliate', to: '/app/affiliates/new' },
         ]}
       />
 
@@ -123,6 +123,7 @@ export default function Dashboard() {
         <StatCard label="Contacted" value={metrics.totals.contacted} />
         <StatCard label="Samples Given" value={metrics.totals.samplesGiven} />
         <StatCard label="Follow Up Visit" value={metrics.totals.followUpVisit} />
+        <StatCard label="Delivered" value={metrics.totals.delivered || 0} />
       </section>
 
       <section className="quick-grid">

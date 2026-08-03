@@ -4,9 +4,9 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import PageHeader from '../components/common/PageHeader';
-import { exportToExcel, generateDataPDF, readExcelAsJSON } from '../utils/exportUtils';
+import { exportToExcel, generateDataPDF, readExcelAsJSON, downloadImportTemplate } from '../utils/exportUtils';
 
-const statusOptions = ['All', 'Contacted', 'Samples Given', 'Follow Up Visit'];
+const statusOptions = ['All', 'Contacted', 'Samples Given', 'Follow Up Visit', 'Delivered'];
 
 export default function AffiliatesList() {
   const { token, user } = useAuth();
@@ -86,7 +86,7 @@ export default function AffiliatesList() {
         title="Affiliates"
         subtitle="Search, segment, import/export, and navigate each affiliate profile quickly."
         actions={[
-          { label: 'Create Affiliate', to: '/app/affiliates/new' },
+          { label: 'Add Affiliate', to: '/app/affiliates/new' },
         ]}
       />
 
@@ -113,10 +113,13 @@ export default function AffiliatesList() {
         </select>
 
         <div className="btn-inline-group">
-          {user?.role === 'admin' && (
+          {(user?.role === 'admin' || user?.role === 'staff') && (
             <>
+              <button type="button" className="secondary-btn" title="Download Import Template" onClick={downloadImportTemplate}>
+                <Download size={14} /> Template
+              </button>
               <button type="button" className="secondary-btn" title="Export Excel" onClick={handleExportExcel}>
-                <FileJson size={14} /> Excel
+                <FileJson size={14} /> Export Excel
               </button>
               <button type="button" className="secondary-btn" title="Export PDF" onClick={handleExportPDF}>
                 <FileText size={14} /> PDF
@@ -127,9 +130,6 @@ export default function AffiliatesList() {
               <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" className="hidden-input" onChange={handleImportExcel} />
             </>
           )}
-          <Link to="/app/affiliates/new" className="primary-btn inline-btn">
-            Add Affiliate
-          </Link>
         </div>
       </section>
 

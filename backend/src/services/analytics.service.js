@@ -81,6 +81,7 @@ export async function getDashboardMetrics({ rangeDays = 7 }, auth) {
       contacted: statusCounts['Contacted'],
       samplesGiven: statusCounts['Samples Given'],
       followUpVisit: statusCounts['Follow Up Visit'],
+      delivered: statusCounts['Delivered'],
     },
     statusCounts,
     trendSeries,

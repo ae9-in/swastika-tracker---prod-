@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import html2canvas from 'html2canvas';
 import * as XLSX from 'xlsx';
 
@@ -36,7 +36,7 @@ export const generateDataPDF = ({ title, subtitle, data, columns, fileName = 're
     doc.line(14, 42, pageWidth - 14, 42);
 
     // 2. Table
-    doc.autoTable({
+    autoTable(doc, {
         startY: 50,
         head: [columns],
         body: data.map(item => columns.map(col => item[col] || '')),
@@ -71,27 +71,31 @@ export const generateDashboardPDF = (metrics, businessName = 'Business') => {
         { l: 'Total Affiliates', v: metrics.totals.totalAffiliates },
         { l: 'Contacted', v: metrics.totals.contacted },
         { l: 'Samples Given', v: metrics.totals.samplesGiven },
-        { l: 'Follow Ups', v: metrics.totals.followUpVisit }
+        { l: 'Follow Ups', v: metrics.totals.followUpVisit },
+        { l: 'Delivered', v: metrics.totals.delivered || 0 }
     ];
 
-    doc.autoTable({
+    autoTable(doc, {
         startY: 45,
         head: [['Affiliate Metrics Dashboard']],
         body: [[
             `Total: ${stats[0].v}`,
             `Contacted: ${stats[1].v}`,
             `Samples: ${stats[2].v}`,
-            `Follow Ups: ${stats[3].v}`
+            `Follow Ups: ${stats[3].v}`,
+            `Delivered: ${stats[4].v}`
         ]],
         theme: 'plain',
-        styles: { fontSize: 13, fontStyle: 'bold', halign: 'center', cellPadding: 8 },
+        styles: { fontSize: 11, fontStyle: 'bold', halign: 'center', cellPadding: 6 },
         headStyles: { fillColor: [249, 166, 66], textColor: [0, 0, 0] }
     });
 
     // Recent Activity Table
     doc.setFontSize(14);
     doc.setTextColor(30, 41, 59);
-    doc.text('Recent System Activity', 14, doc.autoTable.previous.finalY + 15);
+    
+    const finalY = doc.lastAutoTable?.finalY || 65;
+    doc.text('Recent System Activity', 14, finalY + 15);
 
     const activityRows = metrics.recentActivities.map(a => [
         new Date(a.createdAt).toLocaleString(),
@@ -99,8 +103,8 @@ export const generateDashboardPDF = (metrics, businessName = 'Business') => {
         a.type
     ]);
 
-    doc.autoTable({
-        startY: doc.autoTable.previous.finalY + 20,
+    autoTable(doc, {
+        startY: finalY + 20,
         head: [['Timestamp', 'Description', 'Event Type']],
         body: activityRows.slice(0, 15),
         styles: { fontSize: 10 },
@@ -153,7 +157,7 @@ export const exportElementToPDF = async (element, fileName = 'screenshot_report.
 };
 
 /**
- * Reads an Excel file and returns JSON data
+ * Reads an Excel file and returns JSON data with keys normalized to lowerCamelCase / database columns
  */
 export const readExcelAsJSON = (file) => {
     return new Promise((resolve, reject) => {
@@ -163,7 +167,24 @@ export const readExcelAsJSON = (file) => {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
                 const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-                resolve(json);
+                
+                // Map and sanitize keys to match backend's expected data schema
+                const sanitized = json.map(row => {
+                    const cleanRow = {};
+                    Object.entries(row).forEach(([key, val]) => {
+                        const cleanKey = key.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+                        if (cleanKey === 'name') cleanRow.name = String(val);
+                        else if (cleanKey === 'product') cleanRow.product = String(val);
+                        else if (cleanKey === 'address') cleanRow.address = String(val);
+                        else if (['phone1', 'phone', 'primaryphone', 'contact', 'number'].includes(cleanKey)) cleanRow.phone1 = String(val);
+                        else if (['phone2', 'secondaryphone', 'alternativephone'].includes(cleanKey)) cleanRow.phone2 = String(val);
+                        else if (['description', 'notes', 'remark', 'details'].includes(cleanKey)) cleanRow.description = String(val);
+                        else if (cleanKey === 'status') cleanRow.status = String(val);
+                    });
+                    return cleanRow;
+                });
+                
+                resolve(sanitized);
             } catch (err) {
                 reject(err);
             }
@@ -171,4 +192,26 @@ export const readExcelAsJSON = (file) => {
         reader.onerror = reject;
         reader.readAsArrayBuffer(file);
     });
+};
+
+/**
+ * Generates and triggers downloading of an Excel template for bulk importing affiliates
+ */
+export const downloadImportTemplate = () => {
+    const templateData = [
+        {
+            name: 'Example Spiritual Center',
+            product: 'Premium Puja Kits',
+            address: '12 Temple Road, Sector 4, Haridwar, UK',
+            phone1: '9876543210',
+            phone2: '9876543211',
+            description: 'Leading regional supplier of spiritual products.',
+            status: 'Contacted' // Must be: Contacted, Samples Given, Follow Up Visit, or Delivered
+        }
+    ];
+
+    const worksheet = XLSX.utils.json_to_sheet(templateData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Affiliates Template');
+    XLSX.writeFile(workbook, 'swastika_affiliates_template.xlsx');
 };
