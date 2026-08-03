@@ -22,6 +22,7 @@ const listSchema = z.object({
     pageSize: z.coerce.number().optional(),
     status: z.string().optional(),
     search: z.string().optional(),
+    sortBy: z.string().optional(),
   }),
 });
 
@@ -39,7 +40,8 @@ const createSchema = z.object({
     product: z.string().min(1),
     address: z.string().min(1),
     phone1: z.string().regex(phoneRegex),
-    phone2: z.string().regex(phoneRegex),
+    phone2: z.string().regex(phoneRegex).optional().nullable(),
+    location_link: z.string().optional().nullable(),
     description: z.string().min(1),
     status: z.enum(['Contacted', 'Samples Given', 'Follow Up Visit', 'Delivered']).optional(),
   }),
@@ -54,7 +56,8 @@ const updateSchema = z.object({
       product: z.string().min(1).optional(),
       address: z.string().min(1).optional(),
       phone1: z.string().regex(phoneRegex).optional(),
-      phone2: z.string().regex(phoneRegex).optional(),
+      phone2: z.string().regex(phoneRegex).optional().nullable(),
+      location_link: z.string().optional().nullable(),
       description: z.string().min(1).optional(),
       status: z.enum(['Contacted', 'Samples Given', 'Follow Up Visit', 'Delivered']).optional(),
     })
@@ -95,6 +98,8 @@ export const affiliateValidation = {
         address: z.string().min(1),
         phone1: z.string().min(10),
         phone2: z.string().min(10).optional().nullable(),
+        location_link: z.string().optional().nullable(),
+        locationLink: z.string().optional().nullable(),
         description: z.string().optional().nullable(),
         status: z.string().optional().nullable(),
       })),

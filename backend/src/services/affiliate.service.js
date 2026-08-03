@@ -23,7 +23,7 @@ function normalizePagination(page, pageSize) {
 }
 
 export async function listAffiliates(params, auth) {
-  const { search = '', status = 'All' } = params;
+  const { search = '', status = 'All', sortBy = 'updated_at_desc' } = params;
   const { page, pageSize } = normalizePagination(params.page, params.pageSize);
   const businessId = auth.activeBusinessId;
   assertBusinessAccess(auth, businessId);
@@ -48,12 +48,17 @@ export async function listAffiliates(params, auth) {
   values.push(pageSize);
   values.push((page - 1) * pageSize);
 
+  let orderBy = 'updated_at desc';
+  if (sortBy === 'name_asc') orderBy = 'name asc';
+  if (sortBy === 'name_desc') orderBy = 'name desc';
+  if (sortBy === 'created_at_desc') orderBy = 'created_at desc';
+
   const dataSql = `
-    select id, business_id as "businessId", name, product, address, phone1, phone2, description,
+    select id, business_id as "businessId", name, product, address, phone1, phone2, location_link as "locationLink", description,
            status, created_at as "createdAt", updated_at as "updatedAt", created_by as "createdBy"
     from affiliates
     where ${where.join(' and ')}
-    order by updated_at desc
+    order by ${orderBy}
     limit $${values.length - 1} offset $${values.length}
   `;
   const { rows } = await query(dataSql, values);
@@ -70,7 +75,7 @@ export async function listAffiliates(params, auth) {
 export async function getAffiliateById(id, auth) {
   const { rows } = await query(
     `
-    select id, business_id as "businessId", name, product, address, phone1, phone2, description,
+    select id, business_id as "businessId", name, product, address, phone1, phone2, location_link as "locationLink", description,
            status, created_at as "createdAt", updated_at as "updatedAt", created_by as "createdBy"
     from affiliates where id = $1
     `,
@@ -107,12 +112,23 @@ export async function createAffiliate(payload, auth) {
 
   const { rows } = await query(
     `
-    insert into affiliates (business_id, name, product, address, phone1, phone2, description, status, created_by)
-    values ($1, $2, $3, $4, $5, $6, $7, coalesce($8, 'Contacted'), $9)
-    returning id, business_id as "businessId", name, product, address, phone1, phone2, description,
+    insert into affiliates (business_id, name, product, address, phone1, phone2, location_link, description, status, created_by)
+    values ($1, $2, $3, $4, $5, $6, $7, $8, coalesce($9, 'Contacted'), $10)
+    returning id, business_id as "businessId", name, product, address, phone1, phone2, location_link as "locationLink", description,
               status, created_at as "createdAt", updated_at as "updatedAt", created_by as "createdBy"
     `,
-    [businessId, payload.name, payload.product, payload.address, payload.phone1, payload.phone2, payload.description, payload.status, auth.sub],
+    [
+      businessId,
+      payload.name,
+      payload.product,
+      payload.address,
+      payload.phone1,
+      payload.phone2 || null,
+      payload.locationLink || payload.location_link || null,
+      payload.description,
+      payload.status,
+      auth.sub
+    ],
   );
 
   const affiliate = rows[0];
@@ -144,7 +160,8 @@ export async function updateAffiliate(id, payload, auth) {
     product: payload.product ?? affiliate.product,
     address: payload.address ?? affiliate.address,
     phone1: payload.phone1 ?? affiliate.phone1,
-    phone2: payload.phone2 ?? affiliate.phone2,
+    phone2: payload.phone2 !== undefined ? payload.phone2 : affiliate.phone2,
+    location_link: payload.locationLink !== undefined ? payload.locationLink : (payload.location_link !== undefined ? payload.location_link : affiliate.locationLink),
     description: payload.description ?? affiliate.description,
     status: payload.status ?? affiliate.status,
   };
@@ -152,12 +169,22 @@ export async function updateAffiliate(id, payload, auth) {
   const { rows } = await query(
     `
     update affiliates
-    set name = $2, product = $3, address = $4, phone1 = $5, phone2 = $6, description = $7, status = $8, updated_at = now()
+    set name = $2, product = $3, address = $4, phone1 = $5, phone2 = $6, location_link = $7, description = $8, status = $9, updated_at = now()
     where id = $1
-    returning id, business_id as "businessId", name, product, address, phone1, phone2, description,
+    returning id, business_id as "businessId", name, product, address, phone1, phone2, location_link as "locationLink", description,
               status, created_at as "createdAt", updated_at as "updatedAt", created_by as "createdBy"
     `,
-    [id, update.name, update.product, update.address, update.phone1, update.phone2, update.description, update.status],
+    [
+      id,
+      update.name,
+      update.product,
+      update.address,
+      update.phone1,
+      update.phone2 || null,
+      update.location_link || null,
+      update.description,
+      update.status
+    ],
   );
 
   const updated = rows[0];
@@ -269,7 +296,7 @@ export async function importAffiliatesCsv(csvText, auth) {
       const cells = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(',');
       const parsed = cells.map(c => c.replace(/^"|"$/g, '').trim());
 
-      const [name, product, address, phone1, phone2, description, status] = parsed;
+      const [name, product, address, phone1, phone2, location_link, description, status] = parsed;
 
       if (!name || !product || !address || !phone1) {
         errors.push({ row: i + 1, message: 'Missing required fields (Name, Product, Address, or Phone1)' });
@@ -281,10 +308,10 @@ export async function importAffiliatesCsv(csvText, auth) {
       try {
         await client.query(
           `
-          insert into affiliates (business_id, name, product, address, phone1, phone2, description, status, created_by)
-          values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          insert into affiliates (business_id, name, product, address, phone1, phone2, location_link, description, status, created_by)
+          values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
           `,
-          [businessId, name, product, address, phone1, phone2 || '', description || '', safeStatus, auth.sub],
+          [businessId, name, product, address, phone1, phone2 || null, location_link || null, description || '', safeStatus, auth.sub],
         );
         inserted += 1;
       } catch (err) {
@@ -328,7 +355,7 @@ export async function importAffiliatesJson(data, auth) {
 
     for (let index = 0; index < data.length; index++) {
       const row = data[index];
-      const { name, product, address, phone1, phone2, description, status } = row;
+      const { name, product, address, phone1, phone2, locationLink, location_link, description, status } = row;
 
       if (!name || !product || !address || !phone1) {
         errors.push({ row: index + 1, message: 'Missing required fields' });
@@ -340,8 +367,8 @@ export async function importAffiliatesJson(data, auth) {
       try {
         await client.query(
           `
-          insert into affiliates (business_id, name, product, address, phone1, phone2, description, status, created_by)
-          values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          insert into affiliates (business_id, name, product, address, phone1, phone2, location_link, description, status, created_by)
+          values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
           `,
           [
             businessId,
@@ -349,7 +376,8 @@ export async function importAffiliatesJson(data, auth) {
             product,
             address,
             phone1,
-            phone2 || '',
+            phone2 || null,
+            locationLink || location_link || null,
             description || '',
             safeStatus,
             auth.sub,

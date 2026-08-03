@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Phone, MapPin, MessageSquare, ArrowRight, History, Calendar, User, Clock, FileText, UserCheck, Bell } from 'lucide-react';
+import { Phone, MapPin, MessageSquare, ArrowRight, History, Calendar, User, Clock, FileText, UserCheck, Bell, ExternalLink } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { api, statusOrder } from '../services/api';
 import PageHeader from '../components/common/PageHeader';
@@ -211,6 +211,16 @@ export default function AffiliateDetail() {
                   <label><MapPin size={12} /> Address</label>
                   <p>{record.address}</p>
                 </div>
+                {record.locationLink && (
+                  <div className="info-bit full">
+                    <label><ExternalLink size={12} /> Location Link</label>
+                    <p>
+                      <a href={record.locationLink} target="_blank" rel="noopener noreferrer" className="link" style={{ textDecoration: 'underline', color: 'var(--accent)', wordBreak: 'break-all' }}>
+                        {record.locationLink}
+                      </a>
+                    </p>
+                  </div>
+                )}
                 <div className="info-bit full">
                   <label><FileText size={12} /> Notes</label>
                   <p className="description-text">{record.description || 'No additional notes provided.'}</p>

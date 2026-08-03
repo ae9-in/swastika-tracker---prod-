@@ -12,6 +12,7 @@ const initialForm = {
   address: '',
   phone1: '',
   phone2: '',
+  location_link: '',
   description: '',
   status: 'Contacted',
 };
@@ -72,7 +73,8 @@ export default function AffiliateForm() {
             product: res.affiliate.product,
             address: res.affiliate.address,
             phone1: res.affiliate.phone1,
-            phone2: res.affiliate.phone2,
+            phone2: res.affiliate.phone2 || '',
+            location_link: res.affiliate.locationLink || '',
             description: res.affiliate.description,
             status: res.affiliate.status,
           });
@@ -95,8 +97,8 @@ export default function AffiliateForm() {
     setError('');
 
     const phonePattern = /^\d{10}$/;
-    if (!phonePattern.test(form.phone1) || !phonePattern.test(form.phone2)) {
-      setError('Phone numbers must be exactly 10 digits.');
+    if (!phonePattern.test(form.phone1) || (form.phone2 && !phonePattern.test(form.phone2))) {
+      setError('Phone 1 must be 10 digits. Phone 2 (if entered) must be 10 digits.');
       setSaving(false);
       return;
     }
@@ -156,11 +158,10 @@ export default function AffiliateForm() {
           </label>
 
           <label>
-            Phone 2
+            Phone 2 (Optional)
             <input
               value={form.phone2}
               onChange={(event) => setForm((prev) => ({ ...prev, phone2: event.target.value }))}
-              required
             />
           </label>
 
@@ -176,6 +177,15 @@ export default function AffiliateForm() {
                 </option>
               ))}
             </select>
+          </label>
+
+          <label>
+            Location Link (Optional)
+            <input
+              value={form.location_link}
+              onChange={(event) => setForm((prev) => ({ ...prev, location_link: event.target.value }))}
+              placeholder="e.g. https://maps.google.com/..."
+            />
           </label>
 
           {isEdit && (

@@ -13,7 +13,7 @@ export default function AffiliatesList() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
-  const [query, setQuery] = useState({ page: 1, pageSize: 10, status: 'All', search: '' });
+  const [query, setQuery] = useState({ page: 1, pageSize: 10, status: 'All', search: '', sortBy: 'updated_at_desc' });
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const fileRef = useRef(null);
@@ -112,6 +112,28 @@ export default function AffiliatesList() {
           ))}
         </select>
 
+        <select
+          value={query.sortBy}
+          onChange={(event) => setQuery((prev) => ({ ...prev, page: 1, sortBy: event.target.value }))}
+          title="Sort order"
+        >
+          <option value="updated_at_desc">Recently Updated</option>
+          <option value="name_asc">Name (A-Z)</option>
+          <option value="name_desc">Name (Z-A)</option>
+          <option value="created_at_desc">Newest Created</option>
+        </select>
+
+        <select
+          value={query.pageSize}
+          onChange={(event) => setQuery((prev) => ({ ...prev, page: 1, pageSize: Number(event.target.value) }))}
+          title="Items per page"
+        >
+          <option value={10}>10 per page</option>
+          <option value={20}>20 per page</option>
+          <option value={50}>50 per page</option>
+          <option value={100}>100 per page</option>
+        </select>
+
         <div className="btn-inline-group">
           {(user?.role === 'admin' || user?.role === 'staff') && (
             <>
@@ -184,7 +206,7 @@ export default function AffiliatesList() {
           Previous
         </button>
         <p>
-          Page {query.page} of {totalPages}
+          Showing {rows.length} of {total} affiliates (Page {query.page} of {totalPages})
         </p>
         <button
           type="button"

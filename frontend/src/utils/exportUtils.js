@@ -178,6 +178,7 @@ export const readExcelAsJSON = (file) => {
                         else if (cleanKey === 'address') cleanRow.address = String(val);
                         else if (['phone1', 'phone', 'primaryphone', 'contact', 'number'].includes(cleanKey)) cleanRow.phone1 = String(val);
                         else if (['phone2', 'secondaryphone', 'alternativephone'].includes(cleanKey)) cleanRow.phone2 = String(val);
+                        else if (['locationlink', 'location', 'maps', 'map', 'link'].includes(cleanKey)) cleanRow.location_link = String(val);
                         else if (['description', 'notes', 'remark', 'details'].includes(cleanKey)) cleanRow.description = String(val);
                         else if (cleanKey === 'status') cleanRow.status = String(val);
                     });
@@ -205,6 +206,7 @@ export const downloadImportTemplate = () => {
             address: '12 Temple Road, Sector 4, Haridwar, UK',
             phone1: '9876543210',
             phone2: '9876543211',
+            location_link: 'https://maps.google.com/?q=Haridwar',
             description: 'Leading regional supplier of spiritual products.',
             status: 'Contacted' // Must be: Contacted, Samples Given, Follow Up Visit, or Delivered
         }
